@@ -49,8 +49,6 @@ module binary_ud_cordic_core #(
                     ud_pipeline[i+1] <= ud_pipeline[i];
                 end
 
-                // Binary UD-CORDIC: 1 = Add/Sub, 0 = Sub/Add (NEVER skip)
-                // Note: We use ud_pipeline[i][i] to grab the bit that traveled with this data
                 if (ud_pipeline[i][i]) begin
                     x[i+1] <= x[i] - (y[i] >>> (i+1));
                     y[i+1] <= y[i] + (x[i] >>> (i+1));

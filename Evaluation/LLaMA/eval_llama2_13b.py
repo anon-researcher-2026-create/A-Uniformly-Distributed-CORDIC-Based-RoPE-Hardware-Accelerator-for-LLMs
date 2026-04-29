@@ -23,7 +23,6 @@ print("Using device:", device)
 # =========================================================
 model_name = "meta-llama/Llama-2-13b-hf"
 
-# Using the token you provided previously to bypass the HF Gate
 MY_HF_TOKEN = "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"
 
 print(f"Loading tokenizer for {model_name}...")
@@ -36,7 +35,7 @@ print("Loading LLaMA-2 13B across TWO GPUs (This will take a few minutes)...")
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     torch_dtype=torch.float16,
-    device_map="auto", # Automatically splits the 26GB model across both T4 GPUs
+    device_map="auto",
     token=MY_HF_TOKEN,
     use_safetensors=True
 )
@@ -69,7 +68,6 @@ def cordic_rope(q, k, cos, sin, unsqueeze_dim=1, std_dev=0.01):
     k_embed = (k * c_approx) + (rotate_half(k) * s_approx)
     return q_embed, k_embed
 
-# Global variable to hold ("mode_name", fractional_bits)
 CURRENT_MODE = "float"
 
 def patched_rope(q, k, cos, sin, *args, **kwargs):
@@ -105,7 +103,6 @@ def compute_perplexity_continuous(model, tokenizer, dataset, desc):
     encodings = tokenizer(full_text, return_tensors="pt")
     seq_len = encodings.input_ids.size(1)
     
-    # Keeping window at 1024 to prevent memory leaks on the 13B model
     max_length = 1024 
     nlls = []
     
@@ -114,7 +111,6 @@ def compute_perplexity_continuous(model, tokenizer, dataset, desc):
         end_loc = min(i + max_length, seq_len)
         trg_len = end_loc - i
         
-        # device_map="auto" usually puts the first layer on cuda:0
         input_ids = encodings.input_ids[:, begin_loc:end_loc].to("cuda:0")
         target_ids = input_ids.clone()
         
